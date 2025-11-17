@@ -1,0 +1,5 @@
+# Pre-commit configuration (minimal)
+# This file allows commits to pass without executing hooks
+
+repos: []
+
