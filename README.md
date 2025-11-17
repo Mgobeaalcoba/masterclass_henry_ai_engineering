@@ -486,7 +486,3 @@ poetry run python main.py
 ```
 
 ---
-
-**¿Preguntas?** Revisa la documentación técnica en los archivos `.md` incluidos.
-
-**¡Buena suerte con tu masterclass!** 🎓✨
