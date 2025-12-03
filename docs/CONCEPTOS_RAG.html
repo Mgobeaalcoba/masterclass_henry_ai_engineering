@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>&#x1f4da; Conceptos Fundamentales de RAG - Gu&iacute;a para Masterclass</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="-conceptos-fundamentales-de-rag---guía-para-masterclass">📚 Conceptos Fundamentales de RAG - Guía para Masterclass</h1>
+<p>Este documento explica los conceptos clave de RAG (Retrieval Augmented Generation) de manera clara y didáctica.</p>
+<hr>
+<h2 id="-índice">📋 Índice</h2>
+<ol>
+<li><a href="#1-chunks-fragmentos">Chunks (Fragmentos)</a></li>
+<li><a href="#2-embeddings-vectores">Embeddings (Vectores)</a></li>
+<li><a href="#3-chromadb-base-de-datos-vectorial">ChromaDB (Base de Datos Vectorial)</a></li>
+<li><a href="#4-retriever-recuperador">Retriever (Recuperador)</a></li>
+<li><a href="#5-cadena-rag-y-lcel">Cadena RAG y LCEL</a></li>
+</ol>
+<hr>
+<h2 id="1-chunks-fragmentos">1. Chunks (Fragmentos)</h2>
+<h3 id="qué-son-los-chunks">¿Qué son los Chunks?</h3>
+<p>Los <strong>chunks</strong> (fragmentos) son <strong>porciones pequeñas de texto</strong> en las que se divide un documento grande para facilitar su procesamiento y recuperación.</p>
+<h3 id="cuál-es-su-uso">¿Cuál es su uso?</h3>
+<p><strong>Problema sin chunks:</strong></p>
+<ul>
+<li>Un documento de 10,000 palabras es difícil de procesar</li>
+<li>Buscar información específica requiere leer todo el documento</li>
+<li>Los modelos tienen límites de tokens (contexto limitado)</li>
+</ul>
+<p><strong>Solución con chunks:</strong></p>
+<ul>
+<li>Dividir el documento en fragmentos de 500-1000 palabras</li>
+<li>Cada chunk puede procesarse independientemente</li>
+<li>Buscar solo los chunks relevantes para una pregunta específica</li>
+<li>Enviar solo los chunks relevantes al modelo (ahorra tokens y costos)</li>
+</ul>
+<h3 id="cómo-se-configuran">¿Cómo se configuran?</h3>
+<pre><code class="language-python"><span class="hljs-keyword">from</span> langchain_text_splitters <span class="hljs-keyword">import</span> RecursiveCharacterTextSplitter
+
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=<span class="hljs-number">500</span>,        <span class="hljs-comment"># Tamaño máximo de cada chunk (en caracteres)</span>
+    chunk_overlap=<span class="hljs-number">50</span>,      <span class="hljs-comment"># Caracteres que se solapan entre chunks</span>
+    length_function=<span class="hljs-built_in">len</span>    <span class="hljs-comment"># Función para medir longitud</span>
+)
+
+chunks = text_splitter.split_documents(documentos)
+</code></pre>
+<p><strong>Parámetros importantes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Descripción</th>
+<th>Ejemplo</th>
+<th>Efecto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chunk_size</code></td>
+<td>Tamaño máximo del fragmento</td>
+<td>500 caracteres</td>
+<td>Chunks más grandes = más contexto, pero menos precisión</td>
+</tr>
+<tr>
+<td><code>chunk_overlap</code></td>
+<td>Solapamiento entre chunks</td>
+<td>50 caracteres</td>
+<td>Evita perder información en los bordes</td>
+</tr>
+<tr>
+<td><code>length_function</code></td>
+<td>Cómo medir longitud</td>
+<td><code>len</code></td>
+<td>Puede usar tokens, palabras, etc.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>¿Por qué overlap (solapamiento)?</strong></p>
+<pre><code>Documento original:
+&quot;HenryPy es una librería de Python. Para instalarla usa: pip install henrypy&quot;
+
+Sin overlap:
+Chunk 1: &quot;HenryPy es una librería de Python.&quot;
+Chunk 2: &quot;Para instalarla usa: pip install henrypy&quot;
+
+Con overlap (50 chars):
+Chunk 1: &quot;HenryPy es una librería de Python. Para instalarla&quot;
+Chunk 2: &quot;una librería de Python. Para instalarla usa: pip install henrypy&quot;
+</code></pre>
+<p>El overlap asegura que información importante en los bordes no se pierda.</p>
+<hr>
+<h2 id="2-embeddings-vectores">2. Embeddings (Vectores)</h2>
+<h3 id="qué-son-los-embeddings">¿Qué son los Embeddings?</h3>
+<p>Los <strong>embeddings</strong> son <strong>representaciones numéricas (vectores) de texto</strong> que capturan el significado semántico. Son arrays de números que representan el &quot;sentido&quot; del texto.</p>
+<h3 id="cuál-es-su-uso-1">¿Cuál es su uso?</h3>
+<p><strong>Problema:</strong></p>
+<ul>
+<li>Las computadoras no entienden texto directamente</li>
+<li>Necesitamos una forma de comparar textos por significado, no por palabras exactas</li>
+</ul>
+<p><strong>Solución con embeddings:</strong></p>
+<ul>
+<li>Convertir texto → vector de números (ej: [0.2, -0.5, 0.8, ...])</li>
+<li>Textos similares tienen vectores similares</li>
+<li>Podemos buscar textos similares usando matemáticas (distancia entre vectores)</li>
+</ul>
+<p><strong>Ejemplo visual:</strong></p>
+<pre><code>&quot;Instalar Python&quot;     → [0.2, -0.3, 0.5, 0.1, ...]
+&quot;Instalar librería&quot;    → [0.25, -0.28, 0.48, 0.12, ...]  ← Similar (cerca en espacio)
+&quot;Comer pizza&quot;          → [-0.8, 0.4, -0.2, 0.9, ...]      ← Diferente (lejos en espacio)
+</code></pre>
+<h3 id="cómo-se-configuran-1">¿Cómo se configuran?</h3>
+<pre><code class="language-python"><span class="hljs-keyword">from</span> langchain_community.embeddings <span class="hljs-keyword">import</span> HuggingFaceEmbeddings
+
+embeddings = HuggingFaceEmbeddings(
+    model_name=<span class="hljs-string">&quot;sentence-transformers/all-MiniLM-L6-v2&quot;</span>,
+    model_kwargs={<span class="hljs-string">&#x27;device&#x27;</span>: <span class="hljs-string">&#x27;cpu&#x27;</span>}  <span class="hljs-comment"># o &#x27;cuda&#x27; para GPU</span>
+)
+
+<span class="hljs-comment"># Convertir texto a vector</span>
+vector = embeddings.embed_query(<span class="hljs-string">&quot;¿Cómo instalo HenryPy?&quot;</span>)
+<span class="hljs-comment"># Resultado: [0.123, -0.456, 0.789, ...] (vector de 384 números)</span>
+</code></pre>
+<p><strong>Modelos comunes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Modelo</th>
+<th>Tamaño</th>
+<th>Dimensiones</th>
+<th>Uso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>all-MiniLM-L6-v2</code></td>
+<td>~80MB</td>
+<td>384</td>
+<td>Rápido, bueno para general</td>
+</tr>
+<tr>
+<td><code>all-mpnet-base-v2</code></td>
+<td>~420MB</td>
+<td>768</td>
+<td>Más preciso, más lento</td>
+</tr>
+<tr>
+<td><code>text-embedding-ada-002</code> (OpenAI)</td>
+<td>API</td>
+<td>1536</td>
+<td>Muy preciso, requiere API key</td>
+</tr>
+</tbody>
+</table>
+<p><strong>En nuestro proyecto:</strong></p>
+<ul>
+<li>Usamos <code>all-MiniLM-L6-v2</code> porque es <strong>gratis</strong> y funciona localmente</li>
+<li>Genera vectores de 384 dimensiones</li>
+<li>No requiere conexión a internet después de la primera descarga</li>
+</ul>
+<h3 id="qué-relación-tienen-con-los-chunks">¿Qué relación tienen con los Chunks?</h3>
+<p><strong>Flujo completo:</strong></p>
+<pre><code>1. Documento original
+   ↓
+2. Dividir en CHUNKS (fragmentos de texto)
+   ↓
+3. Convertir cada CHUNK a EMBEDDING (vector numérico)
+   ↓
+4. Almacenar embeddings en base vectorial (ChromaDB)
+   ↓
+5. Cuando llega una pregunta:
+   - Convertir pregunta a embedding
+   - Buscar chunks con embeddings similares
+   - Recuperar los chunks más relevantes
+</code></pre>
+<p><strong>Ejemplo práctico:</strong></p>
+<pre><code class="language-python"><span class="hljs-comment"># 1. Documento original</span>
+documento = <span class="hljs-string">&quot;HenryPy es una librería de Python...&quot;</span>
+
+<span class="hljs-comment"># 2. Dividir en chunks</span>
+chunks = [
+    <span class="hljs-string">&quot;HenryPy es una librería de Python diseñada para...&quot;</span>,
+    <span class="hljs-string">&quot;Para instalar HenryPy usa: pip install henrypy...&quot;</span>,
+    <span class="hljs-string">&quot;La configuración requiere una API_KEY...&quot;</span>
+]
+
+<span class="hljs-comment"># 3. Convertir cada chunk a embedding</span>
+embeddings_chunk1 = [<span class="hljs-number">0.1</span>, -<span class="hljs-number">0.2</span>, <span class="hljs-number">0.3</span>, ...]  <span class="hljs-comment"># Vector de 384 números</span>
+embeddings_chunk2 = [<span class="hljs-number">0.15</span>, -<span class="hljs-number">0.18</span>, <span class="hljs-number">0.28</span>, ...]
+embeddings_chunk3 = [<span class="hljs-number">0.05</span>, -<span class="hljs-number">0.25</span>, <span class="hljs-number">0.35</span>, ...]
+
+<span class="hljs-comment"># 4. Pregunta del usuario</span>
+pregunta = <span class="hljs-string">&quot;¿Cómo instalo HenryPy?&quot;</span>
+embedding_pregunta = [<span class="hljs-number">0.14</span>, -<span class="hljs-number">0.19</span>, <span class="hljs-number">0.29</span>, ...]  <span class="hljs-comment"># Similar a chunk2</span>
+
+<span class="hljs-comment"># 5. Buscar chunk más similar (usando distancia matemática)</span>
+<span class="hljs-comment"># Resultado: chunk2 es el más relevante</span>
+</code></pre>
+<hr>
+<h2 id="3-chromadb-base-de-datos-vectorial">3. ChromaDB (Base de Datos Vectorial)</h2>
+<h3 id="qué-es-chromadb">¿Qué es ChromaDB?</h3>
+<p><strong>ChromaDB</strong> es una <strong>base de datos especializada</strong> para almacenar y buscar <strong>vectores (embeddings)</strong> de manera eficiente.</p>
+<h3 id="qué-tiene-de-particular">¿Qué tiene de particular?</h3>
+<p><strong>Características principales:</strong></p>
+<ol>
+<li><strong>Búsqueda por similitud semántica</strong>: Encuentra textos similares, no exactos</li>
+<li><strong>Optimizada para vectores</strong>: Diseñada específicamente para operaciones con embeddings</li>
+<li><strong>Búsqueda rápida</strong>: Usa algoritmos especializados (como LSH, HNSW) para búsqueda rápida</li>
+<li><strong>Persistencia</strong>: Guarda los datos en disco (no se pierden al cerrar)</li>
+<li><strong>Ligera</strong>: No requiere servidor, funciona como biblioteca Python</li>
+</ol>
+<h3 id="por-qué-no-usar-sqlite-para-la-misma-tarea">¿Por qué no usar SQLite para la misma tarea?</h3>
+<p><strong>SQLite vs ChromaDB:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>SQLite</th>
+<th>ChromaDB</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tipo de búsqueda</strong></td>
+<td>Exacta (WHERE texto = &quot;X&quot;)</td>
+<td>Por similitud semántica</td>
+</tr>
+<tr>
+<td><strong>Optimización</strong></td>
+<td>Para texto exacto</td>
+<td>Para vectores numéricos</td>
+</tr>
+<tr>
+<td><strong>Búsqueda semántica</strong></td>
+<td>❌ No nativa</td>
+<td>✅ Nativa y rápida</td>
+</tr>
+<tr>
+<td><strong>Ejemplo</strong></td>
+<td>Buscar &quot;instalar&quot; encuentra solo &quot;instalar&quot;</td>
+<td>Buscar &quot;instalar&quot; encuentra &quot;instalación&quot;, &quot;setup&quot;, &quot;configurar&quot;</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ejemplo práctico:</strong></p>
+<p><strong>Con SQLite:</strong></p>
+<pre><code class="language-sql"><span class="hljs-comment">-- Solo encuentra coincidencias exactas</span>
+<span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> documentos <span class="hljs-keyword">WHERE</span> texto <span class="hljs-keyword">LIKE</span> <span class="hljs-string">&#x27;%instalar%&#x27;</span>;
+<span class="hljs-comment">-- No encuentra: &quot;instalación&quot;, &quot;setup&quot;, &quot;configurar&quot;</span>
+</code></pre>
+<p><strong>Con ChromaDB:</strong></p>
+<pre><code class="language-python"><span class="hljs-comment"># Encuentra textos semánticamente similares</span>
+results = vectorstore.similarity_search(<span class="hljs-string">&quot;instalar&quot;</span>)
+<span class="hljs-comment"># Encuentra: &quot;instalación&quot;, &quot;setup&quot;, &quot;configurar&quot;, &quot;instalar&quot;</span>
+</code></pre>
+<p><strong>¿Cuándo usar cada uno?</strong></p>
+<ul>
+<li><strong>SQLite</strong>: Datos estructurados, búsquedas exactas, relaciones complejas</li>
+<li><strong>ChromaDB</strong>: Búsqueda semántica, RAG, recomendaciones, búsqueda por significado</li>
+</ul>
+<p><strong>En nuestro proyecto:</strong></p>
+<ul>
+<li>Usamos ChromaDB porque necesitamos <strong>búsqueda semántica</strong></li>
+<li>Cuando preguntamos &quot;instalar HenryPy&quot;, queremos encontrar chunks sobre &quot;instalación&quot;, &quot;setup&quot;, etc.</li>
+<li>SQLite no puede hacer esto eficientemente</li>
+</ul>
+<hr>
+<h2 id="4-retriever-recuperador">4. Retriever (Recuperador)</h2>
+<h3 id="qué-es-un-retriever">¿Qué es un Retriever?</h3>
+<p>Un <strong>retriever</strong> es un componente que <strong>busca y recupera los chunks más relevantes</strong> de la base vectorial para una pregunta específica.</p>
+<h3 id="cuál-es-su-utilidad-en-un-rag">¿Cuál es su utilidad en un RAG?</h3>
+<p><strong>Función principal:</strong></p>
+<ol>
+<li>Recibe una pregunta del usuario</li>
+<li>Convierte la pregunta a embedding</li>
+<li>Busca en ChromaDB los chunks con embeddings más similares</li>
+<li>Retorna los N chunks más relevantes</li>
+</ol>
+<p><strong>Sin retriever:</strong></p>
+<ul>
+<li>Tendríamos que buscar manualmente en todos los chunks</li>
+<li>No sabríamos cuáles son relevantes</li>
+<li>Enviaríamos información irrelevante al modelo (desperdicio de tokens)</li>
+</ul>
+<p><strong>Con retriever:</strong></p>
+<ul>
+<li>Encuentra automáticamente los chunks relevantes</li>
+<li>Solo envía información útil al modelo</li>
+<li>Ahorra tokens y mejora la precisión</li>
+</ul>
+<h3 id="qué-son-los-fragmentos">¿Qué son los fragmentos?</h3>
+<p>Los <strong>fragmentos</strong> son los <strong>chunks recuperados</strong> por el retriever. Son las porciones de texto que el retriever considera más relevantes para responder la pregunta.</p>
+<p><strong>Ejemplo:</strong></p>
+<pre><code class="language-python"><span class="hljs-comment"># Pregunta del usuario</span>
+pregunta = <span class="hljs-string">&quot;¿Cómo instalo HenryPy?&quot;</span>
+
+<span class="hljs-comment"># Retriever busca y encuentra los 3 fragmentos más relevantes</span>
+fragmentos = retriever.invoke(pregunta)
+<span class="hljs-comment"># Resultado:</span>
+<span class="hljs-comment"># [</span>
+<span class="hljs-comment">#   &quot;Para instalar HenryPy, usa: pip install henrypy...&quot;,</span>
+<span class="hljs-comment">#   &quot;La instalación estándar se realiza a través de pip...&quot;,</span>
+<span class="hljs-comment">#   &quot;Si olvidas este paso, las funciones fallarán...&quot;</span>
+<span class="hljs-comment"># ]</span>
+
+<span class="hljs-comment"># Estos fragmentos se envían al modelo como contexto</span>
+</code></pre>
+<p><strong>Configuración del retriever:</strong></p>
+<pre><code class="language-python">retriever = vectorstore.as_retriever(
+    search_kwargs={<span class="hljs-string">&quot;k&quot;</span>: <span class="hljs-number">3</span>}  <span class="hljs-comment"># Retorna los 3 fragmentos más relevantes</span>
+)
+</code></pre>
+<p><strong>Parámetro <code>k</code>:</strong></p>
+<ul>
+<li><code>k=3</code>: Retorna los 3 fragmentos más relevantes</li>
+<li><code>k=5</code>: Retorna los 5 fragmentos más relevantes</li>
+<li>Más fragmentos = más contexto, pero también más tokens y posiblemente información menos relevante</li>
+</ul>
+<hr>
+<h2 id="5-cadena-rag-y-lcel">5. Cadena RAG y LCEL</h2>
+<h3 id="qué-es-una-cadena-rag">¿Qué es una Cadena RAG?</h3>
+<p>Una <strong>cadena RAG</strong> es el <strong>flujo completo</strong> que conecta todos los componentes: pregunta → búsqueda → contexto → respuesta.</p>
+<p><strong>Componentes de la cadena:</strong></p>
+<pre><code>1. PREGUNTA del usuario
+   ↓
+2. RETRIEVER busca chunks relevantes
+   ↓
+3. FORMAT_DOCS formatea los chunks
+   ↓
+4. PROMPT template combina contexto + pregunta
+   ↓
+5. LLM genera respuesta usando el contexto
+   ↓
+6. OUTPUT_PARSER formatea la respuesta
+   ↓
+7. RESPUESTA final
+</code></pre>
+<h3 id="qué-es-lcel">¿Qué es LCEL?</h3>
+<p><strong>LCEL</strong> (LangChain Expression Language) es una forma <strong>declarativa y funcional</strong> de construir cadenas en LangChain usando el operador <code>|</code> (pipe).</p>
+<p><strong>Sintaxis tradicional (sin LCEL):</strong></p>
+<pre><code class="language-python"><span class="hljs-comment"># Complicado y verboso</span>
+docs = retriever.invoke(pregunta)
+formatted_docs = format_docs(docs)
+prompt_input = {<span class="hljs-string">&quot;context&quot;</span>: formatted_docs, <span class="hljs-string">&quot;question&quot;</span>: pregunta}
+prompt_output = prompt.invoke(prompt_input)
+llm_output = llm.invoke(prompt_output)
+respuesta = output_parser.invoke(llm_output)
+</code></pre>
+<p><strong>Sintaxis LCEL (moderna):</strong></p>
+<pre><code class="language-python"><span class="hljs-comment"># Simple y elegante</span>
+rag_chain = (
+    {<span class="hljs-string">&quot;context&quot;</span>: retriever | format_docs, <span class="hljs-string">&quot;question&quot;</span>: RunnablePassthrough()}
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+
+respuesta = rag_chain.invoke(pregunta)
+</code></pre>
+<h3 id="cómo-funciona-lcel">¿Cómo funciona LCEL?</h3>
+<p><strong>Operador <code>|</code> (pipe):</strong></p>
+<ul>
+<li>Similar a pipes en terminal: <code>cat file.txt | grep &quot;texto&quot; | head -5</code></li>
+<li>Cada componente se ejecuta secuencialmente</li>
+<li>La salida de uno es la entrada del siguiente</li>
+</ul>
+<p><strong>Componentes LCEL:</strong></p>
+<pre><code class="language-python">rag_chain = (
+    <span class="hljs-comment"># PASO 1: Preparar inputs</span>
+    {
+        <span class="hljs-string">&quot;context&quot;</span>: retriever | format_docs,  <span class="hljs-comment"># Buscar y formatear chunks</span>
+        <span class="hljs-string">&quot;question&quot;</span>: RunnablePassthrough()     <span class="hljs-comment"># Pasar pregunta sin modificar</span>
+    }
+    |  <span class="hljs-comment"># ↓</span>
+    <span class="hljs-comment"># PASO 2: Crear prompt</span>
+    prompt  <span class="hljs-comment"># Combina contexto + pregunta en un prompt</span>
+    |  <span class="hljs-comment"># ↓</span>
+    <span class="hljs-comment"># PASO 3: Generar respuesta</span>
+    llm  <span class="hljs-comment"># Modelo de lenguaje genera respuesta</span>
+    |  <span class="hljs-comment"># ↓</span>
+    <span class="hljs-comment"># PASO 4: Formatear salida</span>
+    StrOutputParser()  <span class="hljs-comment"># Convierte a string simple</span>
+)
+</code></pre>
+<p><strong>Ventajas de LCEL:</strong></p>
+<ol>
+<li><strong>Legible</strong>: Se lee de izquierda a derecha como un flujo</li>
+<li><strong>Composable</strong>: Fácil agregar/quitar componentes</li>
+<li><strong>Eficiente</strong>: LangChain optimiza la ejecución</li>
+<li><strong>Moderno</strong>: Es la forma recomendada en LangChain v1.0+</li>
+</ol>
+<p><strong>Ejemplo paso a paso:</strong></p>
+<pre><code class="language-python"><span class="hljs-comment"># Input</span>
+pregunta = <span class="hljs-string">&quot;¿Cómo instalo HenryPy?&quot;</span>
+
+<span class="hljs-comment"># Paso 1: Retriever busca chunks</span>
+chunks = retriever.invoke(pregunta)
+<span class="hljs-comment"># Resultado: [chunk1, chunk2, chunk3]</span>
+
+<span class="hljs-comment"># Paso 2: Formatear chunks</span>
+contexto = format_docs(chunks)
+<span class="hljs-comment"># Resultado: &quot;chunk1\n\nchunk2\n\nchunk3&quot;</span>
+
+<span class="hljs-comment"># Paso 3: Crear prompt</span>
+prompt_completo = prompt.<span class="hljs-built_in">format</span>(context=contexto, question=pregunta)
+<span class="hljs-comment"># Resultado: &quot;Eres un asistente...\nContexto: chunk1...\nPregunta: ¿Cómo instalo HenryPy?&quot;</span>
+
+<span class="hljs-comment"># Paso 4: LLM genera respuesta</span>
+respuesta_llm = llm.invoke(prompt_completo)
+<span class="hljs-comment"># Resultado: Objeto Message con contenido</span>
+
+<span class="hljs-comment"># Paso 5: Parsear a string</span>
+respuesta_final = StrOutputParser().invoke(respuesta_llm)
+<span class="hljs-comment"># Resultado: &quot;Para instalar HenryPy, usa: pip install henrypy...&quot;</span>
+</code></pre>
+<p><strong>Con LCEL, todo esto se hace automáticamente:</strong></p>
+<pre><code class="language-python">respuesta = rag_chain.invoke(pregunta)
+<span class="hljs-comment"># ¡Listo! Todo el flujo se ejecuta automáticamente</span>
+</code></pre>
+<hr>
+<h2 id="-flujo-completo-de-rag-resumen-visual">🔄 Flujo Completo de RAG (Resumen Visual)</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                    DOCUMENTO ORIGINAL                        │
+│         &quot;documentacion_tecnica.md&quot; (texto plano)            │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ↓
+        ┌───────────────────────────────┐
+        │   TEXT SPLITTER (Chunks)      │
+        │   Divide en fragmentos de 500  │
+        │   caracteres con overlap 50   │
+        └───────────────┬───────────────┘
+                        │
+                        ↓
+        ┌───────────────────────────────┐
+        │   EMBEDDINGS                  │
+        │   Convierte cada chunk a      │
+        │   vector numérico (384 dim)   │
+        └───────────────┬───────────────┘
+                        │
+                        ↓
+        ┌───────────────────────────────┐
+        │   CHROMADB                    │
+        │   Almacena vectores para      │
+        │   búsqueda rápida             │
+        └───────────────┬───────────────┘
+                        │
+                        ↓ (Cuando llega pregunta)
+        ┌───────────────────────────────┐
+        │   RETRIEVER                   │
+        │   Busca chunks más relevantes │
+        │   (k=3 fragmentos)           │
+        └───────────────┬───────────────┘
+                        │
+                        ↓
+        ┌───────────────────────────────┐
+        │   CADENA RAG (LCEL)           │
+        │   retriever → format → prompt │
+        │   → llm → parser              │
+        └───────────────┬───────────────┘
+                        │
+                        ↓
+        ┌───────────────────────────────┐
+        │   RESPUESTA FINAL             │
+        │   Con contexto de documentación│
+        └───────────────────────────────┘
+</code></pre>
+<hr>
+<h2 id="-resumen-de-conceptos-clave">📝 Resumen de Conceptos Clave</h2>
+<table>
+<thead>
+<tr>
+<th>Concepto</th>
+<th>¿Qué es?</th>
+<th>¿Para qué sirve?</th>
+<th>Ejemplo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Chunk</strong></td>
+<td>Fragmento de texto</td>
+<td>Dividir documentos grandes</td>
+<td>&quot;Para instalar HenryPy usa pip...&quot;</td>
+</tr>
+<tr>
+<td><strong>Embedding</strong></td>
+<td>Vector numérico</td>
+<td>Representar significado del texto</td>
+<td>[0.2, -0.3, 0.5, ...]</td>
+</tr>
+<tr>
+<td><strong>ChromaDB</strong></td>
+<td>Base de datos vectorial</td>
+<td>Buscar por similitud semántica</td>
+<td>Encuentra textos similares</td>
+</tr>
+<tr>
+<td><strong>Retriever</strong></td>
+<td>Componente de búsqueda</td>
+<td>Encontrar chunks relevantes</td>
+<td>Retorna los 3 mejores chunks</td>
+</tr>
+<tr>
+<td><strong>Cadena RAG</strong></td>
+<td>Flujo completo</td>
+<td>Conectar todos los componentes</td>
+<td>pregunta → búsqueda → respuesta</td>
+</tr>
+<tr>
+<td><strong>LCEL</strong></td>
+<td>Lenguaje de expresiones</td>
+<td>Construir cadenas de forma elegante</td>
+<td><code>retriever | prompt | llm</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="-preguntas-frecuentes">🎯 Preguntas Frecuentes</h2>
+<h3 id="por-qué-dividir-en-chunks-si-puedo-enviar-todo-el-documento">¿Por qué dividir en chunks si puedo enviar todo el documento?</h3>
+<ul>
+<li><strong>Límites de tokens</strong>: Los modelos tienen límites (ej: 4K, 8K, 32K tokens)</li>
+<li><strong>Costo</strong>: Más tokens = más costo</li>
+<li><strong>Precisión</strong>: Solo enviar información relevante mejora la respuesta</li>
+<li><strong>Velocidad</strong>: Procesar chunks pequeños es más rápido</li>
+</ul>
+<h3 id="qué-tamaño-de-chunk-es-mejor">¿Qué tamaño de chunk es mejor?</h3>
+<ul>
+<li><strong>Chunks pequeños (200-300)</strong>: Más precisos, pero pueden perder contexto</li>
+<li><strong>Chunks medianos (500-800)</strong>: Balance entre precisión y contexto (recomendado)</li>
+<li><strong>Chunks grandes (1000+)</strong>: Más contexto, pero menos precisión</li>
+</ul>
+<p><strong>Recomendación</strong>: Empieza con 500 y ajusta según resultados.</p>
+<h3 id="por-qué-usar-embeddings-locales-huggingface-vs-api-openai">¿Por qué usar embeddings locales (HuggingFace) vs API (OpenAI)?</h3>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>HuggingFace (Local)</th>
+<th>OpenAI (API)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Costo</strong></td>
+<td>✅ Gratis</td>
+<td>❌ Pago por uso</td>
+</tr>
+<tr>
+<td><strong>Velocidad</strong></td>
+<td>⚠️ Primera vez lenta (descarga)</td>
+<td>✅ Rápido</td>
+</tr>
+<tr>
+<td><strong>Privacidad</strong></td>
+<td>✅ 100% local</td>
+<td>⚠️ Envía datos a API</td>
+</tr>
+<tr>
+<td><strong>Precisión</strong></td>
+<td>⚠️ Buena</td>
+<td>✅ Excelente</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Recomendación</strong>: Para desarrollo y demos, usa HuggingFace. Para producción, considera OpenAI.</p>
+<h3 id="cuántos-fragmentos-k-debo-recuperar">¿Cuántos fragmentos (k) debo recuperar?</h3>
+<ul>
+<li><strong>k=1</strong>: Muy específico, puede perder contexto</li>
+<li><strong>k=3</strong>: Balance recomendado (usado en nuestro proyecto)</li>
+<li><strong>k=5</strong>: Más contexto, pero puede incluir información menos relevante</li>
+<li><strong>k=10+</strong>: Demasiado contexto, puede confundir al modelo</li>
+</ul>
+<p><strong>Recomendación</strong>: Empieza con k=3 y ajusta según resultados.</p>
+<hr>
+<h2 id="-recursos-adicionales">📚 Recursos Adicionales</h2>
+<ul>
+<li><a href="https://python.langchain.com/">LangChain Documentation</a></li>
+<li><a href="https://docs.trychroma.com/">ChromaDB Documentation</a></li>
+<li><a href="https://www.sbert.net/">HuggingFace Sentence Transformers</a></li>
+<li><a href="https://arxiv.org/abs/2005.11401">RAG Paper Original</a></li>
+</ul>
+<hr>
+<p><strong>¡Listo para tu masterclass!</strong> 🚀</p>
+<p>Este documento cubre todos los conceptos fundamentales que necesitas explicar. Puedes usarlo como guía durante la presentación o compartirlo con los participantes.</p>
+
+            
+            
+        </body>
+        </html>

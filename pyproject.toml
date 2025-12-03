@@ -3,7 +3,7 @@ name = "masterclass-henry-cerebro-corpo"
 version = "0.1.0"
 description = "Proyecto masterclass con LangChain y ChromaDB"
 authors = ["mgobea"]
-readme = "README.md"
+readme = "docs/README.md"
 package-mode = false
 
 [tool.poetry.dependencies]

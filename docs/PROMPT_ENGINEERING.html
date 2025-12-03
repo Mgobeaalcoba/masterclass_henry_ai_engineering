@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>&#x1f3af; Prompt Engineering&colon; Generaci&oacute;n de Scripts RAG</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="-prompt-engineering-generación-de-scripts-rag">🎯 Prompt Engineering: Generación de Scripts RAG</h1>
+<p>Este documento contiene ejemplos de <strong>prompt engineering</strong> para generar los tres scripts principales del proyecto usando un solo prompt cada uno.</p>
+<hr>
+<h2 id="-índice">📋 Índice</h2>
+<ol>
+<li><a href="#1-script-sin-contexto-model_without_contextpy">Script sin Contexto</a></li>
+<li><a href="#2-script-con-rag-mainpy">Script con RAG</a></li>
+<li><a href="#3-script-h%C3%ADbrido-main_hybridpy">Script Híbrido</a></li>
+</ol>
+<hr>
+<h2 id="1-script-sin-contexto-model_without_contextpy">1. Script sin Contexto (<code>model_without_context.py</code>)</h2>
+<h3 id="-objetivo">🎯 Objetivo</h3>
+<p>Crear un script simple que demuestre cómo un LLM <strong>NO puede responder</strong> sobre información privada porque no tiene acceso a documentación interna.</p>
+<h3 id="-prompt-completo">📝 Prompt Completo</h3>
+<pre><code>Crea un script Python llamado `model_without_context.py` que demuestre la falta de contexto en LLMs.
+
+REQUISITOS FUNCIONALES:
+1. Chat interactivo con OpenAI GPT usando la API oficial
+2. Detección automática del modelo disponible (gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-3.5-turbo)
+3. Configuración anti-alucinación:
+   - Temperature: 0.1 (muy baja)
+   - top_p: 0.9
+   - System prompt que instruya al modelo a decir &quot;No sé sobre...&quot; cuando no tiene información
+4. Loop de conversación interactivo con comando 'salir' para terminar
+5. Manejo de errores y validación de API Key desde archivo .env
+
+REQUISITOS TÉCNICOS:
+- Usar `openai` (cliente oficial) y `python-dotenv`
+- Función `detectar_modelo(client)` que pruebe modelos en orden de preferencia
+- Función `main()` con loop interactivo
+- System prompt que evite alucinaciones: &quot;Eres un asistente honesto y directo. Si no conoces o no tienes información sobre algo, debes decir claramente 'No sé sobre...' o 'No tengo información sobre...' en lugar de inventar o suponer.&quot;
+- Documentación en español en docstrings
+- Mensajes informativos con emojis para mejor UX
+
+ESTRUCTURA ESPERADA:
+- Imports: os, OpenAI, load_dotenv
+- Función detectar_modelo(client) → retorna modelo disponible o None
+- Función main() → configuración, loop interactivo, manejo de errores
+- Punto de entrada: if __name__ == &quot;__main__&quot;
+
+El script debe ser simple, directo y demostrar claramente que el modelo NO conoce datos privados.
+</code></pre>
+<h3 id="-características-clave-del-prompt">✅ Características Clave del Prompt</h3>
+<ul>
+<li><strong>Especifica el objetivo educativo</strong>: &quot;demostrar la falta de contexto&quot;</li>
+<li><strong>Lista requisitos funcionales</strong>: qué debe hacer el script</li>
+<li><strong>Lista requisitos técnicos</strong>: librerías y configuraciones específicas</li>
+<li><strong>Define estructura</strong>: funciones esperadas y organización</li>
+<li><strong>Incluye detalles específicos</strong>: valores de temperatura, system prompt exacto</li>
+</ul>
+<hr>
+<h2 id="2-script-con-rag-mainpy">2. Script con RAG (<code>main.py</code>)</h2>
+<h3 id="-objetivo-1">🎯 Objetivo</h3>
+<p>Crear un script que implemente RAG completo usando LangChain + ChromaDB para dar contexto al modelo sobre documentación privada.</p>
+<h3 id="-prompt-completo-1">📝 Prompt Completo</h3>
+<pre><code>Crea un script Python llamado `main.py` que implemente un sistema RAG (Retrieval Augmented Generation) completo usando LangChain y ChromaDB.
+
+REQUISITOS FUNCIONALES:
+1. Sistema RAG completo con los siguientes pasos:
+   - Cargar documento markdown desde archivo &quot;documentacion_tecnica.md&quot;
+   - Dividir documento en chunks (chunk_size=500, chunk_overlap=50)
+   - Crear embeddings usando HuggingFaceEmbeddings (modelo: sentence-transformers/all-MiniLM-L6-v2)
+   - Almacenar vectores en ChromaDB (directorio: ./chroma_db)
+   - Configurar retriever que busque los 3 fragmentos más relevantes
+   - Crear cadena RAG usando LangChain Expression Language (LCEL)
+2. Detección automática del modelo OpenAI disponible
+3. Configuración anti-alucinación:
+   - Temperature: 0.1
+   - Prompt template estricto que instruya usar SOLO el contexto proporcionado
+4. Chat interactivo que muestre cuántos fragmentos se consultaron
+5. Manejo de errores y validación de API Key
+
+REQUISITOS TÉCNICOS:
+- Librerías: langchain_openai, langchain_community (embeddings, document_loaders, vectorstores), langchain_text_splitters, langchain_core (prompts, runnables, output_parsers), python-dotenv
+- Función `detectar_modelo()` que pruebe modelos en orden
+- Función `configurar_rag()` que retorne (rag_chain, modelo, retriever)
+- Función `main()` con loop interactivo
+- Constantes de configuración: DOCUMENTO = &quot;documentacion_tecnica.md&quot;, CHROMA_DB_DIR = &quot;./chroma_db&quot;
+- Prompt template que diga: &quot;Responde SOLO usando la información que está en el contexto proporcionado. Si la información NO está en el contexto, di claramente 'No tengo información sobre esto en la documentación'&quot;
+- Documentación en español en docstrings
+- Mensajes informativos durante la configuración
+
+ESTRUCTURA ESPERADA:
+- Imports de LangChain
+- Constantes de configuración
+- Función detectar_modelo() → retorna modelo o None
+- Función configurar_rag() → configura todo el sistema RAG, retorna (rag_chain, modelo, retriever)
+- Función format_docs(docs) → formatea documentos recuperados
+- Función main() → configura RAG y ejecuta chat interactivo
+- Punto de entrada: if __name__ == &quot;__main__&quot;
+
+CADENA RAG (LCEL):
+Usar LangChain Expression Language:
+rag_chain = (
+    {&quot;context&quot;: retriever | format_docs, &quot;question&quot;: RunnablePassthrough()}
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+
+El script debe demostrar claramente cómo el modelo AHORA SÍ puede responder sobre datos privados usando RAG.
+</code></pre>
+<h3 id="-características-clave-del-prompt-1">✅ Características Clave del Prompt</h3>
+<ul>
+<li><strong>Especifica arquitectura completa</strong>: todos los pasos del pipeline RAG</li>
+<li><strong>Detalla configuraciones</strong>: valores específicos de chunk_size, modelo de embeddings, etc.</li>
+<li><strong>Incluye estructura LCEL</strong>: muestra exactamente cómo construir la cadena</li>
+<li><strong>Define prompt template</strong>: texto exacto del prompt para evitar alucinaciones</li>
+<li><strong>Especifica retornos</strong>: qué debe retornar cada función</li>
+</ul>
+<hr>
+<h2 id="3-script-híbrido-main_hybridpy">3. Script Híbrido (<code>main_hybrid.py</code>)</h2>
+<h3 id="-objetivo-2">🎯 Objetivo</h3>
+<p>Crear un script que combine RAG con conocimiento del modelo: primero busca en documentación, si no encuentra usa conocimiento propio.</p>
+<h3 id="-prompt-completo-2">📝 Prompt Completo</h3>
+<pre><code>Crea un script Python llamado `main_hybrid.py` que implemente un sistema HÍBRIDO que combine RAG con conocimiento del entrenamiento del modelo.
+
+REQUISITOS FUNCIONALES:
+1. Sistema híbrido con estrategia de decisión:
+   - PRIMERO: Buscar en documentación usando RAG
+   - EVALUAR: Determinar si los documentos encontrados son relevantes
+   - SI ES RELEVANTE: Usar RAG con documentación
+   - SI NO ES RELEVANTE: Usar conocimiento propio del modelo
+   - DETECCIÓN ESPECIAL: Si el usuario pide explícitamente usar conocimiento fuera de fuentes, hacerlo directamente
+2. Configuración RAG completa (igual que main.py):
+   - Cargar documento, dividir en chunks, crear embeddings HuggingFace, almacenar en ChromaDB
+   - Retriever con k=3 fragmentos
+3. Función de evaluación de relevancia:
+   - Analizar si documentos recuperados contienen información relevante
+   - Verificar contenido sustancial (&gt;200 caracteres) y coincidencias de palabras clave
+   - Retornar True/False según relevancia
+4. Dos modos de respuesta:
+   - responder_con_rag(): Usa RAG cuando hay información en documentación
+   - responder_con_conocimiento_propio(): Usa conocimiento del modelo cuando no hay información relevante
+5. Indicadores visuales: Mostrar qué fuente se usó (📚 DOCUMENTACIÓN o 🧠 CONOCIMIENTO PROPIO)
+6. Chat interactivo con información sobre fragmentos consultados
+
+REQUISITOS TÉCNICOS:
+- Mismas librerías que main.py (LangChain completo)
+- Función `configurar_sistema_hibrido()` → retorna (retriever, llm, modelo, vectorstore)
+- Función `evaluar_relevancia_documentos(docs, pregunta)` → retorna bool
+- Función `responder_con_rag(pregunta, retriever, llm)` → retorna str
+- Función `responder_con_conocimiento_propio(pregunta, llm)` → retorna str
+- Función `responder_hibrido(pregunta, retriever, llm)` → retorna (respuesta, fuente)
+- Función `responder_con_rag_directo(pregunta, docs, llm)` → fallback cuando RAG falla pero hay docs relevantes
+- Detección de solicitud explícita: palabras clave ['fuera', 'fuentes', 'consultar', 'por fuera', 'sin documentación']
+- Configuración anti-alucinación: temperature=0.1
+- Prompts específicos:
+  - RAG: &quot;DEBES responder usando la información del contexto proporcionado. NO uses conocimiento fuera del contexto&quot;
+  - Conocimiento propio: &quot;Responde usando tu conocimiento general. Si NO sabes, di 'No sé sobre...'&quot;
+
+ESTRATEGIA DE EVALUACIÓN DE RELEVANCIA:
+- Si contenido_total &gt; 200 caracteres Y hay palabras clave importantes en el contenido → relevante
+- Si contenido_total &gt;= 50 Y hay coincidencias de palabras clave → relevante
+- Filtrar stopwords en español antes de evaluar palabras clave
+- Confiar en el retriever cuando encuentra contenido sustancial
+
+ESTRUCTURA ESPERADA:
+- Imports completos de LangChain
+- Constantes: DOCUMENTO, CHROMA_DB_DIR
+- detectar_modelo()
+- configurar_sistema_hibrido()
+- evaluar_relevancia_documentos(docs, pregunta)
+- responder_con_rag(pregunta, retriever, llm)
+- responder_con_rag_directo(pregunta, docs, llm) [fallback]
+- responder_con_conocimiento_propio(pregunta, llm)
+- responder_hibrido(pregunta, retriever, llm) [función principal de decisión]
+- main()
+- Punto de entrada
+
+LÓGICA DE responder_hibrido():
+1. Detectar si usuario pide explícitamente conocimiento fuera → usar conocimiento propio directamente
+2. Buscar documentos con retriever
+3. Evaluar relevancia con evaluar_relevancia_documentos()
+4. Si relevante → usar RAG
+5. Si RAG dice &quot;no tengo información&quot; pero hay docs relevantes → intentar responder_con_rag_directo()
+6. Si no relevante → usar conocimiento propio
+7. Retornar (respuesta, fuente) donde fuente es &quot;documentación&quot; o &quot;conocimiento del modelo&quot;
+
+El script debe demostrar cómo combinar lo mejor de ambos mundos: datos privados mediante RAG y conocimiento general del modelo.
+</code></pre>
+<h3 id="-características-clave-del-prompt-2">✅ Características Clave del Prompt</h3>
+<ul>
+<li><strong>Define estrategia completa</strong>: flujo de decisión paso a paso</li>
+<li><strong>Especifica múltiples funciones</strong>: cada una con propósito claro</li>
+<li><strong>Detalla lógica de evaluación</strong>: cómo determinar relevancia</li>
+<li><strong>Incluye casos especiales</strong>: detección de solicitud explícita, fallback</li>
+<li><strong>Define estructura completa</strong>: todas las funciones necesarias</li>
+</ul>
+<hr>
+<h2 id="-mejores-prácticas-de-prompt-engineering">🎓 Mejores Prácticas de Prompt Engineering</h2>
+<h3 id="1-estructura-clara">1. <strong>Estructura Clara</strong></h3>
+<ul>
+<li>Separar en secciones: REQUISITOS FUNCIONALES, REQUISITOS TÉCNICOS, ESTRUCTURA ESPERADA</li>
+<li>Usar listas numeradas o con viñetas para mejor legibilidad</li>
+</ul>
+<h3 id="2-especificidad">2. <strong>Especificidad</strong></h3>
+<ul>
+<li>Incluir valores exactos: <code>temperature=0.1</code>, <code>chunk_size=500</code></li>
+<li>Mencionar librerías específicas: <code>langchain_openai</code>, <code>HuggingFaceEmbeddings</code></li>
+<li>Definir nombres de funciones y variables esperadas</li>
+</ul>
+<h3 id="3-contexto-y-objetivo">3. <strong>Contexto y Objetivo</strong></h3>
+<ul>
+<li>Empezar con el objetivo educativo o funcional</li>
+<li>Explicar el &quot;por qué&quot; además del &quot;qué&quot;</li>
+</ul>
+<h3 id="4-ejemplos-concretos">4. <strong>Ejemplos Concretos</strong></h3>
+<ul>
+<li>Incluir código de ejemplo cuando sea relevante (como la cadena LCEL)</li>
+<li>Mostrar estructuras esperadas</li>
+</ul>
+<h3 id="5-restricciones-y-validaciones">5. <strong>Restricciones y Validaciones</strong></h3>
+<ul>
+<li>Especificar qué NO debe hacer (evitar alucinaciones)</li>
+<li>Definir manejo de errores esperado</li>
+</ul>
+<h3 id="6-documentación-esperada">6. <strong>Documentación Esperada</strong></h3>
+<ul>
+<li>Solicitar docstrings en español</li>
+<li>Pedir mensajes informativos para UX</li>
+</ul>
+<hr>
+<h2 id="-comparación-de-prompts">📊 Comparación de Prompts</h2>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>Script Sin Contexto</th>
+<th>Script con RAG</th>
+<th>Script Híbrido</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Complejidad</strong></td>
+<td>Baja</td>
+<td>Media</td>
+<td>Alta</td>
+</tr>
+<tr>
+<td><strong>Librerías</strong></td>
+<td>2 (openai, dotenv)</td>
+<td>7+ (LangChain completo)</td>
+<td>7+ (LangChain completo)</td>
+</tr>
+<tr>
+<td><strong>Funciones</strong></td>
+<td>2</td>
+<td>3</td>
+<td>8+</td>
+</tr>
+<tr>
+<td><strong>Lógica de Decisión</strong></td>
+<td>Ninguna</td>
+<td>Simple (solo RAG)</td>
+<td>Compleja (RAG + evaluación + fallback)</td>
+</tr>
+<tr>
+<td><strong>Prompt Length</strong></td>
+<td>~300 palabras</td>
+<td>~500 palabras</td>
+<td>~800 palabras</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="-uso-de-los-prompts">🚀 Uso de los Prompts</h2>
+<h3 id="opción-1-copiar-y-pegar-directo">Opción 1: Copiar y Pegar Directo</h3>
+<p>Copia el prompt completo en tu herramienta de IA favorita (Claude, GPT-4, etc.) y solicita la generación del código.</p>
+<h3 id="opción-2-adaptación-incremental">Opción 2: Adaptación Incremental</h3>
+<ol>
+<li>Empieza con el prompt base</li>
+<li>Agrega requisitos específicos de tu proyecto</li>
+<li>Refina según necesidades</li>
+</ol>
+<h3 id="opción-3-prompt-modular">Opción 3: Prompt Modular</h3>
+<p>Divide el prompt en secciones y genera cada parte por separado, luego combina.</p>
+<hr>
+<h2 id="-tips-adicionales">💡 Tips Adicionales</h2>
+<ol>
+<li><strong>Iteración</strong>: Los prompts pueden necesitar refinamiento. Prueba y ajusta.</li>
+<li><strong>Especificidad</strong>: Mientras más específico, mejor resultado. Incluye valores exactos.</li>
+<li><strong>Ejemplos</strong>: Si tienes código de referencia, inclúyelo en el prompt.</li>
+<li><strong>Validación</strong>: Siempre prueba el código generado antes de usarlo en producción.</li>
+<li><strong>Documentación</strong>: Solicita explícitamente documentación en español si la necesitas.</li>
+</ol>
+<hr>
+<h2 id="-notas-finales">📝 Notas Finales</h2>
+<p>Estos prompts están diseñados para generar código funcional y bien documentado. Sin embargo, siempre:</p>
+<ul>
+<li>✅ Revisa el código generado</li>
+<li>✅ Prueba la funcionalidad</li>
+<li>✅ Ajusta según tus necesidades específicas</li>
+<li>✅ Valida dependencias y configuraciones</li>
+</ul>
+<p>Los prompts pueden adaptarse para otros frameworks o lenguajes cambiando las librerías y estructuras mencionadas.</p>
+
+            
+            
+        </body>
+        </html>
