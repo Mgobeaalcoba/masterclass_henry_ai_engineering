@@ -7,9 +7,12 @@ El modelo ahora puede responder sobre datos internos que no están en su entrena
 """
 
 import os
+# Configurar tokenizers para evitar warnings de paralelismo después de fork
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.document_loaders import TextLoader
 from langchain_community.vectorstores import Chroma
 from langchain_text_splitters import RecursiveCharacterTextSplitter
